@@ -1,5 +1,7 @@
 package org.example.service;
 
+import org.example.model.WrongObject;
+
 import java.util.*;
 
 public class BrainCalculatorService {
@@ -28,7 +30,7 @@ public class BrainCalculatorService {
         Integer digitCount = 0; //  it is used to get digit count, like 1 has a single digit, and 23 has 2 so on.
 
         ArrayList<String> operators = new ArrayList<>();
-
+        ArrayList<WrongObject> wrongResults = new ArrayList<>();
         setOperators(difficultyLevelUserInput, operators, digitCount);
 
         long endTime = System.currentTimeMillis() + timerUserInput * 60 * 1000;
@@ -46,11 +48,25 @@ public class BrainCalculatorService {
              * return - Map("+", [23, 34, 45]), operator will be decide based on random.
              */
             Map<String, Integer[]> getNumbers = getNumbersBasedOnDifficulty(digitCount, operators, numberCount);
-            // Now, I need to format these getNumbers List for user.
+            // Now, I need to format these getNumbers List for user
+
+            String operator = null;
+            for (Map.Entry<String, Integer[]> entry: getNumbers.entrySet()) {
+                operator = entry.getKey();
+            }
+
             int actualAnswer = formatGetNumbers(getNumbers);
             int userAnswer = input.nextInt();
             if(actualAnswer == userAnswer) {
                 correctAnswerCount++;
+            } else {
+                WrongObject wrongObject = new WrongObject();
+                wrongObject.setId(wrongResults.size() + 1);
+                wrongObject.setActualAnswer(actualAnswer);
+                wrongObject.setNumbers(getNumbers.get(operator));
+                wrongObject.setUserInputAnswer(userAnswer);
+                wrongObject.setOperator(operator);
+                wrongResults.add(wrongObject);
             }
             totalProblemShown++;
             try {
@@ -62,6 +78,17 @@ public class BrainCalculatorService {
 
         }
         System.out.println("Time is up! Exiting...\nCorrect Count is: "+ correctAnswerCount + " ot of total problem count: "+totalProblemShown);
+        System.out.println("Wrong Ansert problem List is below");
+        wrongResults.stream().sequential()
+                .forEach(wrongObject -> {
+                    System.out.println("\n****************");
+                    System.out.println("Count: "+wrongObject.getId() + "" +
+                            " user Provided Answer: "+wrongObject.getUserInputAnswer() + "" +
+                            " Actual Answer: "+wrongObject.getActualAnswer() + "" +
+                            " Operator: "+ wrongObject.getOperator() + "" +
+                            " Numbers array: "+ Arrays.stream(wrongObject.getNumbers()).toList());
+
+                });
     }
 
     private static int formatGetNumbers(Map<String, Integer[]> getNumbers) {
