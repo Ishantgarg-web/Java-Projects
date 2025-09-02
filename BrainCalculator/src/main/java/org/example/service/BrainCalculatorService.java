@@ -3,6 +3,7 @@ package org.example.service;
 import org.example.model.WrongObject;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class BrainCalculatorService {
     static Random random = new Random();
@@ -27,7 +28,7 @@ public class BrainCalculatorService {
 
         Integer correctAnswerCount = 0;
         Integer totalProblemShown = 0;
-        Integer digitCount = 0; //  it is used to get digit count, like 1 has a single digit, and 23 has 2 so on.
+        AtomicInteger digitCount = new AtomicInteger(0); //  it is used to get digit count, like 1 has a single digit, and 23 has 2 so on.
 
         ArrayList<String> operators = new ArrayList<>();
         ArrayList<WrongObject> wrongResults = new ArrayList<>();
@@ -114,7 +115,7 @@ public class BrainCalculatorService {
         return firstNumber;
     }
 
-    private static HashMap<String, Integer[]> getNumbersBasedOnDifficulty(Integer digitCount, ArrayList<String> operators, int numberCount) {
+    private static HashMap<String, Integer[]> getNumbersBasedOnDifficulty(AtomicInteger digitCount, ArrayList<String> operators, int numberCount) {
         HashMap<String, Integer[]> result = new HashMap<>();
         String randomOperator = operators.get(random.nextInt(operators.size()));
         Integer[] numberArray = getNumbersArray(digitCount, numberCount);
@@ -122,13 +123,13 @@ public class BrainCalculatorService {
         return result;
     }
 
-    private static Integer[] getNumbersArray(Integer digitCount, int numberCount) {
+    private static Integer[] getNumbersArray(AtomicInteger digitCount, int numberCount) {
         Integer[] result = new Integer[numberCount];
-        if(digitCount == 1) {
+        if(digitCount.get() == 1) {
             for (int i=0;i<numberCount;i++) {
                 result[i] = random.nextInt(9) + 1;
             }
-        } else if(digitCount == 2) {
+        } else if(digitCount.get() == 2) {
             for (int i=0;i<numberCount;i++){
                 result[i] = random.nextInt(9,99) + 1;
             }
@@ -140,22 +141,22 @@ public class BrainCalculatorService {
         return result;
     }
 
-    private static void setOperators(int difficultyLevelUserInput, ArrayList<String> operators, Integer digitCount) {
+    private static void setOperators(int difficultyLevelUserInput, ArrayList<String> operators, AtomicInteger digitCount) {
         if(difficultyLevelUserInput == 1) {
             operators.addAll(List.of("+", "-", "*"));
-            digitCount = 1;
+            digitCount.set(1);
         } else if(difficultyLevelUserInput == 2) {
             operators.addAll(List.of("+", "-"));
-            digitCount = 2;
+            digitCount.set(2);
         } else if(difficultyLevelUserInput == 3) {
             operators.addAll(List.of("+", "-", "*"));
-            digitCount = 2;
+            digitCount.set(2);
         } else if(difficultyLevelUserInput == 4) {
             operators.add("/");
-            digitCount = 2;
+            digitCount.set(2);
         } else{
             operators.addAll(List.of("+", "-", "*", "/"));
-            digitCount = 2;
+            digitCount.set(2);
         }
     }
 }
