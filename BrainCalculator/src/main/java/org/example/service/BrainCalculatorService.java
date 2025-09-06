@@ -1,6 +1,7 @@
 package org.example.service;
 
 import org.example.constants.OperatorConstants;
+import org.example.model.NumbersBasedOnDifficulty;
 import org.example.model.WrongObject;
 
 import java.util.*;
@@ -26,8 +27,6 @@ public class BrainCalculatorService {
         System.out.println("Enter Number Count(Like how many numbers you want in result");
         int numberCount = input.nextInt();
 
-
-
         Integer correctAnswerCount = 0;
         Integer totalProblemShown = 0;
         AtomicInteger digitCount = new AtomicInteger(0); //  it is used to get digit count, like 1 has a single digit, and 23 has 2 so on.
@@ -37,48 +36,36 @@ public class BrainCalculatorService {
         setOperators(difficultyLevelUserInput, operators, digitCount);
 
         long endTime = System.currentTimeMillis() + timerUserInput * 60 * 1000;
+
+        List<NumbersBasedOnDifficulty> numbersBasedOnDifficultyList = setupQuestionsBeforeTimerStart(digitCount, operators, numberCount);
+
         while(System.currentTimeMillis() < endTime) {
-            /**
-             * I will pass
-             * digitCount - How many digits should be present in the questions.
-             * operators - How many oprators can be present
-             * numberCount - How many numbers user want in result.
-             *
-             * @return - map of operator and array of integers.
-             *
-             * Example:
-             * digitCount = 2, operators = ["+", "-"], numberCount = 3
-             * return - Map("+", [23, 34, 45]), operator will be decide based on random.
-             */
-            Map<String, Integer[]> getNumbers = getNumbersBasedOnDifficulty(digitCount, operators, numberCount);
+
             // Now, I need to format these getNumbers List for user
 
             String operator = null;
-            for (Map.Entry<String, Integer[]> entry: getNumbers.entrySet()) {
-                operator = entry.getKey();
-            }
+            for (int i=0;i<numbersBasedOnDifficultyList.size();i++) {
+                operator = numbersBasedOnDifficultyList.get(i).getOperator();
+                Integer[] getNumbers = numbersBasedOnDifficultyList.get(i).getNumbers();
 
-            int actualAnswer = formatGetNumbers(getNumbers);
-            int userAnswer = input.nextInt();
-            if(actualAnswer == userAnswer) {
-                correctAnswerCount++;
-            } else {
-                WrongObject wrongObject = new WrongObject();
-                wrongObject.setId(wrongResults.size() + 1);
-                wrongObject.setActualAnswer(actualAnswer);
-                wrongObject.setNumbers(getNumbers.get(operator));
-                wrongObject.setUserInputAnswer(userAnswer);
-                wrongObject.setOperator(operator);
-                wrongResults.add(wrongObject);
+                int actualAnswer = formatGetNumbers(operator, getNumbers);
+                int userAnswer = input.nextInt();
+                if(actualAnswer == userAnswer) {
+                    correctAnswerCount++;
+                } else {
+                    WrongObject wrongObject = new WrongObject();
+                    wrongObject.setId(wrongResults.size() + 1);
+                    wrongObject.setActualAnswer(actualAnswer);
+                    wrongObject.setNumbers(getNumbers);
+                    wrongObject.setUserInputAnswer(userAnswer);
+                    wrongObject.setOperator(operator);
+                    wrongResults.add(wrongObject);
+                }
+                totalProblemShown++;
+                if (System.currentTimeMillis() >= endTime) {
+                    break;
+                }
             }
-            totalProblemShown++;
-            try {
-                Thread.sleep(1000); // small pause to avoid busy looping
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                break;
-            }
-
         }
         System.out.println("Time is up! Exiting...\nCorrect Count is: "+ correctAnswerCount + " ot of total problem count: "+totalProblemShown);
         if(wrongResults.isEmpty()) {
@@ -98,13 +85,31 @@ public class BrainCalculatorService {
         }
     }
 
-    private static int formatGetNumbers(Map<String, Integer[]> getNumbers) {
-        String operator = null;
-        for (Map.Entry<String, Integer[]> entry: getNumbers.entrySet()) {
-            operator = entry.getKey();
+    private static List<NumbersBasedOnDifficulty> setupQuestionsBeforeTimerStart(AtomicInteger digitCount, ArrayList<String> operators, int numberCount) {
+        /**
+         * I will pass
+         * digitCount - How many digits should be present in the questions.
+         * operators - How many oprators can be present
+         * numberCount - How many numbers user want in result.
+         *
+         * @return - map of operator and array of integers.
+         * Initially, we will store 100 numbers into this map, and if the value reached to threeshold then again, it will
+         * push 100 numbers into this map. This logic is for making efficient.
+         * Example:
+         * digitCount = 2, operators = ["+", "-"], numberCount = 3
+         * return - Map("+", [23, 34, 45]), operator will be decide based on random.
+         */
+        List<NumbersBasedOnDifficulty> numbersBasedOnDifficultyList = new ArrayList<>();
+        for (int i=0;i<50;i++) {
+            NumbersBasedOnDifficulty numbersBasedOnDifficulty = getNumbersBasedOnDifficulty(digitCount, operators, numberCount);
+            numbersBasedOnDifficultyList.add(numbersBasedOnDifficulty);
         }
-        System.out.println("Numbers are: " + Arrays.stream(getNumbers.get(operator)).toList() + " operator is: "+ operator);
-        Integer numbersArray[] = getNumbers.get(operator);
+        return numbersBasedOnDifficultyList;
+    }
+
+    private static int formatGetNumbers(String operator, Integer[] getNumbers) {
+        System.out.println("Numbers are: " + Arrays.stream(getNumbers).toList() + " operator is: "+ operator);
+        Integer numbersArray[] = getNumbers;
         int firstNumber = numbersArray[0];
         for (int i=1;i<numbersArray.length;i++) {
             int secondNumber = numbersArray[i];
@@ -121,15 +126,20 @@ public class BrainCalculatorService {
         return firstNumber;
     }
 
-    private static HashMap<String, Integer[]> getNumbersBasedOnDifficulty(AtomicInteger digitCount, ArrayList<String> operators, int numberCount) {
-        HashMap<String, Integer[]> result = new HashMap<>();
+    private static NumbersBasedOnDifficulty getNumbersBasedOnDifficulty(AtomicInteger digitCount, ArrayList<String> operators, int numberCount) {
+        NumbersBasedOnDifficulty numbersBasedOnDifficulty = new NumbersBasedOnDifficulty();
         String randomOperator = operators.get(random.nextInt(operators.size()));
         Integer[] numberArray = getNumbersArray(digitCount, numberCount);
-        result.put(randomOperator, numberArray);
-        return result;
+        numbersBasedOnDifficulty.setNumbers(numberArray);
+        numbersBasedOnDifficulty.setOperator(randomOperator);
+        return numbersBasedOnDifficulty;
     }
 
     private static Integer[] getNumbersArray(AtomicInteger digitCount, int numberCount) {
+        /**
+         * digitCount: in each number how many digits will come.
+         * numberCount: How many numbers will come.
+         */
         Integer[] result = new Integer[numberCount];
         if(digitCount.get() == 1) {
             for (int i=0;i<numberCount;i++) {
