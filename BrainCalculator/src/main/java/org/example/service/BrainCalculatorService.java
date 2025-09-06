@@ -1,5 +1,6 @@
 package org.example.service;
 
+import org.example.constants.OperatorConstants;
 import org.example.model.WrongObject;
 
 import java.util.*;
@@ -7,6 +8,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class BrainCalculatorService {
     static Random random = new Random();
+
     /**
      * Simple Logic To return numbers based on difficulty level.
      */
@@ -147,19 +149,19 @@ public class BrainCalculatorService {
 
     private static void setOperators(int difficultyLevelUserInput, ArrayList<String> operators, AtomicInteger digitCount) {
         if(difficultyLevelUserInput == 1) {
-            operators.addAll(List.of("+", "-", "*"));
+            operators.addAll(List.of(OperatorConstants.PLUS, OperatorConstants.SUBTRACT, OperatorConstants.MULTIPLY));
             digitCount.set(1);
         } else if(difficultyLevelUserInput == 2) {
-            operators.addAll(List.of("+", "-"));
+            operators.addAll(List.of(OperatorConstants.PLUS, OperatorConstants.SUBTRACT));
             digitCount.set(2);
         } else if(difficultyLevelUserInput == 3) {
-            operators.addAll(List.of("+", "-", "*"));
+            operators.addAll(List.of(OperatorConstants.PLUS, OperatorConstants.SUBTRACT, OperatorConstants.MULTIPLY));
             digitCount.set(2);
         } else if(difficultyLevelUserInput == 4) {
-            operators.add("/");
+            operators.add(OperatorConstants.DIVIDE);
             digitCount.set(2);
         } else{
-            operators.addAll(List.of("+", "-", "*", "/"));
+            operators.addAll(List.of(OperatorConstants.PLUS, OperatorConstants.SUBTRACT, OperatorConstants.MULTIPLY, OperatorConstants.DIVIDE));
             digitCount.set(2);
         }
     }
