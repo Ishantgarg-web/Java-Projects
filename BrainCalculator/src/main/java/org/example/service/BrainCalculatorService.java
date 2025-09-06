@@ -79,17 +79,21 @@ public class BrainCalculatorService {
 
         }
         System.out.println("Time is up! Exiting...\nCorrect Count is: "+ correctAnswerCount + " ot of total problem count: "+totalProblemShown);
-        System.out.println("Wrong Ansert problem List is below");
-        wrongResults.stream().sequential()
-                .forEach(wrongObject -> {
-                    System.out.println("\n****************");
-                    System.out.println("Count: "+wrongObject.getId() + "" +
-                            " user Provided Answer: "+wrongObject.getUserInputAnswer() + "" +
-                            " Actual Answer: "+wrongObject.getActualAnswer() + "" +
-                            " Operator: "+ wrongObject.getOperator() + "" +
-                            " Numbers array: "+ Arrays.stream(wrongObject.getNumbers()).toList());
+        if(wrongResults.isEmpty()) {
+            System.out.println("There is no wrong answers");
+        } else {
+            System.out.println("Wrong Ansert problem List is below");
+            wrongResults.stream().sequential()
+                    .forEach(wrongObject -> {
+                        System.out.println("\n****************");
+                        System.out.println("Count: "+wrongObject.getId() + "" +
+                                " user Provided Answer: "+wrongObject.getUserInputAnswer() + "" +
+                                " Actual Answer: "+wrongObject.getActualAnswer() + "" +
+                                " Operator: "+ wrongObject.getOperator() + "" +
+                                " Numbers array: "+ Arrays.stream(wrongObject.getNumbers()).toList());
 
-                });
+                    });
+        }
     }
 
     private static int formatGetNumbers(Map<String, Integer[]> getNumbers) {
